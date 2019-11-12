@@ -6,7 +6,6 @@ python tif2js.py --input data/Kampala.tif --output band1.js --band 1 --variable 
 
 @author jonnyhuck
 '''
-from re import split
 from math import ceil
 from requests import get
 from numpy import transpose
