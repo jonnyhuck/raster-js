@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>Raster JS Demo</title>
+
+ 		<link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" />
+		<script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"></script>
+
+		<!-- Load proj4js then the dataset -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.5.0/proj4.js"></script>
+		<script src="./band1.js"></script>
+
+		<style>
+			#map {
+				width: 800px;
+				height: 500px;
+			}
+		</style>
+	</head>
+	<body onload="initMap();">
+		<div id='map'></div>
+
+		<script>
+
+      // global variable for map
+      let map;
+
+      /**
+       * Initialise the map
+       */
+      function initMap() {
+
+        // init the map
+        map = L.map('map').fitBounds(band1.getGeoBounds2());
+
+        // add some tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}).addTo(map);
+
+				// test transforms
+				TEST_transforms([parseInt(band1.width/2), parseInt(band1.height/2)]);
+				console.log("---");
+				TEST_transforms([parseInt(band1.width/3), parseInt(band1.height/3)]);
+				console.log("---");
+				TEST_transforms([parseInt(band1.width/4), parseInt(band1.height/4)]);
+			}
+
+			/**
+			 * Quick test to demonstrate that the coord conversions & transformations work
+			 */
+			function TEST_transforms(tmp0) {
+				console.log(tmp0);
+				var tmp = band1.image2proj(tmp0)
+				console.log(tmp);
+				var tmp2 = band1.proj2geo(tmp);
+				console.log(tmp2);
+				var tmp3 = band1.geo2proj(tmp2);
+				console.log(tmp3);
+				console.log(band1.proj2image(tmp3));
+			}
+		</script>
+	</body>
+</html>
