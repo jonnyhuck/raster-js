@@ -6,14 +6,15 @@ python tif2js.py --input data/Kampala.tif --output band1.js --band 1 --variable 
 
 @author jonnyhuck
 '''
-
+from re import split
 from math import ceil
+from requests import get
 from numpy import transpose
 from argparse import ArgumentParser
 from rasterio import open as rio_open
 
 # setup argument parser
-parser = ArgumentParser(description='Convert GIS raster datasets to a JavaScript representation')
+parser = ArgumentParser(description='Convert GIS raster datasets to a JavaScript representation.\nYou MUST be connected to the internet for some coordinate definitions to work')
 parser.add_argument('--input', 	nargs=1, required=True, help='set the path for the raster to convert to JS')
 parser.add_argument('--output', nargs=1, required=True, help='set the path for output .js file')
 parser.add_argument('--band', 	nargs='?', required=False, default=0, help='set the raster band to convert to JS (default: 1)')
@@ -37,6 +38,12 @@ try:
 		# open the desired band, transpose to make it x,y not y,x
 		data = transpose(ds.read()[int(args.band[0])-1])	# -1 converts from band number to zero-based array position
 
+		# get projection string from online if it is EPSG (as proj4js doesn't like them)
+		if ds.crs.is_epsg_code:
+			projString = get("https://epsg.io/" + ds.crs.to_proj4()[11:] + ".proj4").text
+		else:
+			projString = ds.crs.to_proj4()
+
 		# write JSON object
 		file.write ("const " + args.variable + " = { \n")
 		file.write ("tl: [" + str(ds.bounds.left)  + ", " + str(ds.bounds.top) 	 + "], \n")
@@ -47,10 +54,8 @@ try:
 		file.write ("resolution: " + str(int(ds.res[0])) + ", \n")
 		file.write ("width: " + str(ds.width) + ", \n")
 		file.write ("height: " + str(ds.height) + ", \n")
-		# file.write ("proj: \"" + ds.crs.to_proj4() + "\", \n")
-		file.write ("proj: \"+proj=utm +zone=36 +datum=WGS84 +units=m +no_defs \", \n")
-		# file.write ("transformer: proj4(\"+proj=longlat +datum=WGS84 +no_defs\", \"" + ds.crs.to_proj4() + "\"), \n")
-		file.write ("transformer: proj4(\"+proj=longlat +datum=WGS84 +no_defs\", \"+proj=utm +zone=36 +datum=WGS84 +units=m +no_defs\"), \n")
+		file.write ("proj: \"" + projString + "\", \n")
+		file.write ("transformer: proj4(\"+proj=longlat +datum=WGS84 +no_defs\", \"" + projString + "\"), \n")
 
 		# convert coordinates from projected space to image space
 		file.write ("proj2image: function(coord) { return [parseInt((coord[0] - this.bl[0]) / this.resolution),(this.height - parseInt((coord[1] - this.bl[1]) / this.resolution))]; }, \n")
