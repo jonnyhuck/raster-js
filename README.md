@@ -3,6 +3,8 @@ Convert GIS Raster Datasets to a simple JavaScript object.
 
 This is useful for using raster datasets in libraries such as Leaflet, OpenLayers and Google Maps for applications such as viewsheds, A* Routing algorithm and the calculation of multispectral indices (e.g. NDVI).
 
+If the dataset CRS is defined by an EPSG code (which is not acceptable to [proj4js](http://proj4js.org/) then this script will use the code to look up the proj4 string at [EPSG.io](https://epsg.io/)). In order for this functionality to work, the script must have access to the internet.
+
 ### Usage
 
 ```bash
@@ -12,7 +14,7 @@ python tif2js.py --input data/Kampala.tif --output band1.js --band 1 --variable 
 #### Arguments
 
 * `-h` `--help`: Print help message to the console 
-* `--input`: specify the path to the input raster file (acceptable file types are dictated by support offered in the excellent [rasterio]() and [GDAL]() libraries)
+* `--input`: specify the path to the input raster file (acceptable file types are dictated by support offered in the [rasterio](https://rasterio.readthedocs.io/en/stable/) and [GDAL](https://gdal.org/) libraries)
 * `--output`: specify the path for the output raster file (must be `*.js`)
 * `--band` (optional) specify the band to be extracted into the JavaScript file *(default 1)*
 * `--variable` (optional) specify the variable name used to store the resulting object *(default `data`)*
@@ -74,7 +76,16 @@ optional arguments:
 * `.image2geo2(pixels[])`:  transform coordinates between image space and WGS84 geographical coordinates (in the reverse order `[lat, lng]`)
 * `.getGeoBounds2()`: return the bounds of the dataset in WGS84 geographical coordinates (in the reverse order `[lat, lng]`)
 
+### Dependencies
+
+This script is written for [Python 3](https://www.python.org/) and is heavily reliant upon the excellent [rasterio](https://rasterio.readthedocs.io/en/stable/) library, which is in turn dependent upon the equally excellent [GDAL](https://gdal.org/) library.
+
+The JavaScript output from the script is heavily reliant upon the excellent [proj4js](http://proj4js.org/) library, which is based upon the equally excellent [proj](https://proj.org/) library.
+
+If a dataset CRS is defined by an EPSG code then this script will use the code to look up the proj4 string at the excellent [EPSG.io](https://epsg.io/)) website.
+
 ### ToDo List
 
 * Add multi-band support for a single file
+* Error handling for EPSG-defined CRS being used when offline
 
