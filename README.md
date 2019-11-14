@@ -110,6 +110,6 @@ tif2js.py --input data/Kampala.tif --output band1.js --bands 1 --variable kampal
 
 ### ToDo List
 
-* Add multi-band support for a single file
+* Error handling for output file path
 * Error handling for EPSG-defined CRS being used when offline
 
