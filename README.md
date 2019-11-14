@@ -14,27 +14,31 @@ python tif2js.py --input data/Kampala.tif --output band1.js --band 1 --variable 
 #### Arguments
 
 * `-h` `--help`: Print help message to the console 
-* `--input`: specify the path to the input raster file (acceptable file types are dictated by support offered in the [rasterio](https://rasterio.readthedocs.io/en/stable/) and [GDAL](https://gdal.org/) libraries)
-* `--output`: specify the path for the output raster file (must be `*.js`)
-* `--band` (optional) specify the band to be extracted into the JavaScript file *(default 1)*
-* `--variable` (optional) specify the variable name used to store the resulting object *(default `data`)*
+* `-i` `--input`: specify the path to the input raster file (acceptable file types are dictated by support offered in the [rasterio](https://rasterio.readthedocs.io/en/stable/) and [GDAL](https://gdal.org/) libraries)
+* `-o` `--output`: specify the path for the output raster file (must be `*.js`)
+* `-b` `--bands` (optional) specify the band to be extracted into the JavaScript file *(default all bands)*
+* `-v` `--variable` (optional) specify the variable name used to store the resulting object *(default `data`)*
 
 #### Help output
 
 ```txt
 python tif2js.py -h
-usage: tif2js.py [-h] --input INPUT --output OUTPUT [--band [BAND]]
-                 [--variable [VARIABLE]]
+usage: tif2js.py [-h] --input INPUT --output OUTPUT
+                 [--bands [BANDS [BANDS ...]]] [--variable [VARIABLE]]
 
 Convert GIS raster datasets to a JavaScript representation. You MUST be
 connected to the internet for some coordinate definitions to work
 
 optional arguments:
   -h, --help            show this help message and exit
-  --input INPUT         set the path for the raster to convert to JS
-  --output OUTPUT       set the path for output .js file
-  --band [BAND]         set the raster band to convert to JS (default: 1)
-  --variable [VARIABLE]
+  --input INPUT, -i INPUT
+                        set the path for the raster to convert to JS
+  --output OUTPUT, -o OUTPUT
+                        set the path for output .js file
+  --bands [BANDS [BANDS ...]], -b [BANDS [BANDS ...]]
+                        set the raster bands to convert to JS (default: all
+                        bands)
+  --variable [VARIABLE], -v [VARIABLE]
                         set the name of the variable that contains the output
                         JS object (default: 'data')
 ```
@@ -43,6 +47,7 @@ optional arguments:
 
 #### Properties
 
+* `bands`: The number of bands contained in the dataset
 * `.tl`: The coordinates of the top left corner of the raster (in the original CRS of the dataset)  (e.g. `[444440.0, 45000.0]`)
 * `.bl`: The coordinates of the bottom left corner of the raster (in the original CRS of the dataset)  (e.g.  `[444440.0, 27890.0]`)
 * `.tr`: The coordinates of the top right corner of the raster (in the original CRS of the dataset) (e.g.  `[462100.0, 45000.0]`)
@@ -53,6 +58,10 @@ optional arguments:
 * `.height`: The height of the raster in pixels (e.g. `1711`) 
 * `.proj`: The proj4 string representing the original CRS of the dataset (e.g. `"+proj=utm +zone=36 +datum=WGS84 +units=m +no_defs "`) 
 * `.transformer`: A [proj4js]() object providing transformations between the original CRS of the dataset and WGS84 geographical coordinates (e.g. `proj4("+proj=longlat +datum=WGS84 +no_defs", "+proj=utm +zone=36 +datum=WGS84 +units=m +no_defs")`) 
+
+#### Data
+
+The data are stored in two dimensional arrays named `.band1`, `.band2`, `.band3` and so on. Data are accessed in the form `band1[x][y]`.
 
 #### Functions
 
@@ -83,6 +92,21 @@ This script is written for [Python 3](https://www.python.org/) and is heavily re
 The JavaScript output from the script is heavily reliant upon the excellent [proj4js](http://proj4js.org/) library, which is based upon the equally excellent [proj](https://proj.org/) library.
 
 If a dataset CRS is defined by an EPSG code then this script will use the code to look up the proj4 string at the excellent [EPSG.io](https://epsg.io/)) website.
+
+### Examples
+
+```bash
+# convert all bands in Kampala.tif to json
+python tif2js.py -i data/Kampala.tif -o kampala.js -v kampala
+
+# convert bands 1 2 and 4 from Kampala.tif to JSON
+python tif2js.py -i data/Kampala.tif -o kampala.js -v kampala -b 1 2 4
+
+# convert band 1 from Kampala.tif to json
+tif2js.py --input data/Kampala.tif --output band1.js --bands 1 --variable kampala
+```
+
+
 
 ### ToDo List
 

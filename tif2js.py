@@ -14,10 +14,10 @@ from rasterio import open as rio_open
 
 # setup argument parser
 parser = ArgumentParser(description='Convert GIS raster datasets to a JavaScript representation.\nYou MUST be connected to the internet for some coordinate definitions to work')
-parser.add_argument('--input', 	nargs=1, required=True, help='set the path for the raster to convert to JS')
-parser.add_argument('--output', nargs=1, required=True, help='set the path for output .js file')
-parser.add_argument('--band', 	nargs='?', required=False, default=0, help='set the raster band to convert to JS (default: 1)')
-parser.add_argument('--variable', nargs='?', required=False, default='data', help='set the name of the variable that contains the output JS object (default: \'data\')')
+parser.add_argument('--input', '-i', nargs=1, required=True, help='set the path for the raster to convert to JS')
+parser.add_argument('--output', '-o', nargs=1, required=True, help='set the path for output .js file')
+parser.add_argument('--bands', '-b', nargs='*', required=False, help='set the raster bands to convert to JS (default: all bands)')
+parser.add_argument('--variable', '-v', nargs='?', required=False, default='data', help='set the name of the variable that contains the output JS object (default: \'data\')')
 args = parser.parse_args()
 
 # validate output file is JavaScript
@@ -34,10 +34,13 @@ try:
 		# open output file
 		file = open(args.output[0],'w')
 
-		# open the desired band, transpose to make it x,y not y,x
-		data = transpose(ds.read()[int(args.band[0])-1])	# -1 converts from band number to zero-based array position
+		# get list of bands if specified, otherwise set to all bands
+		if (args.bands):
+			bands = [int(x) for x in args.bands]
+		else:
+			bands = list(range(1, ds.count+1))
 
-		# get projection string from online if it is EPSG (as proj4js doesn't like them)
+		# get projection string (from online if it is EPSG as proj4js doesn't like them)
 		if ds.crs.is_epsg_code:
 			projString = get("https://epsg.io/" + ds.crs.to_proj4()[11:] + ".proj4").text
 		else:
@@ -45,11 +48,12 @@ try:
 
 		# write JSON object
 		file.write ("const " + args.variable + " = { \n")
+		file.write ("bands: " + str(ds.count) + ", \n")
 		file.write ("tl: [" + str(ds.bounds.left)  + ", " + str(ds.bounds.top) 	 + "], \n")
 		file.write ("bl: [" + str(ds.bounds.left)  + ", " + str(ds.bounds.bottom) + "], \n")
 		file.write ("tr: [" + str(ds.bounds.right) + ", " + str(ds.bounds.top)	 + "], \n")
 		file.write ("br: [" + str(ds.bounds.right) + ", " + str(ds.bounds.bottom) + "], \n")
-		file.write ("bounds: [ this.bl , this.tr], \n")
+		file.write ("bounds: [[" + str(ds.bounds.left)  + ", " + str(ds.bounds.bottom) + "] , [" + str(ds.bounds.right) + ", " + str(ds.bounds.top)	 + "]], \n")
 		file.write ("resolution: " + str(int(ds.res[0])) + ", \n")
 		file.write ("width: " + str(ds.width) + ", \n")
 		file.write ("height: " + str(ds.height) + ", \n")
@@ -92,16 +96,21 @@ try:
 		# return bounds in lng lat format (reversed to latlng)
 		file.write ("getGeoBounds2: function() { return [ this.proj2geo(this.bl).reverse(), this.proj2geo(this.tr).reverse() ]; }, \n")
 
-		# load data in row by row
-		file.write ("data: [")
-		for row in data:
-			out = []
-			for col in row:
-					out.append(str(int(ceil(col - 0.5))))
-			file.write ("[" + ",".join(out) + "],")
+		# add all bands in one by one
+		for b in bands:
 
-		# close data array and object
-		file.write ("\n]};")
+			# open the desired band, transpose to make it x,y not y,x
+			data = transpose(ds.read()[b-1])	# -1 converts to zero based list ref
+			file.write ("band" + str(b) + ": [")
+			for row in data:
+				out = []
+				for col in row:
+						out.append(str(int(ceil(col - 0.5))))
+				file.write ("[" + ",".join(out) + "],")
+			file.write ("\n],\n")
+
+		# close object
+		file.write ("\n};")
 
 		# close output file
 		file.close()
