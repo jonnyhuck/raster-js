@@ -38,19 +38,37 @@
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}).addTo(map);
 
 				// log tests to console
-				TEST_properties(kampala);
-				TEST_transforms(kampala, [parseInt(kampala.width/2), parseInt(kampala.height/2)]);
+				// TEST_properties(kampala);
+				// TEST_transforms(kampala, [parseInt(kampala.width/2), parseInt(kampala.height/2)]);
 
-				//calculate ndvi for centre pixel
-				console.log(ndvi(kampala.band1[parseInt(kampala.width/2)][parseInt(kampala.height/2)],
-					kampala.band4[parseInt(kampala.width/2)][parseInt(kampala.height/2)]));
+				// initialise array for ndvi results
+				ndvilayer = [];
+
+				// loop through every single column
+				for(let x = 0; x < kampala.width; x++){
+
+					// add a new column
+					ndvilayer.push([]);
+
+					// loop through every single pixel in the column
+					for(let y = 0; y < kampala.height; y++){
+
+						//calculate ndvi for each pixel
+						ndvilayer[x][y] = ndvi(kampala.band1[x][y], kampala.band4[x][y]);
+					}
+				}
+
+				// print a random vaue to show it worked
+				console.log(kampala.width, ndvilayer.length);
+				console.log(kampala.height, ndvilayer[0].length);
+				console.log(ndvilayer[100][100]);
 			}
+
 
 			/**
 			 * Normalised Difference Vegetation Index calculation
 			 */
 			function ndvi(nir, red){
-				console.log(nir, red);
 				return (nir - red) / (nir + red);
 			}
 
