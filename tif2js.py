@@ -2,7 +2,7 @@
 Convert GIS raster dataset to a simple JavaScript object for use with Leaflet, OpenLayers,
  Google Maps etc.
 
-python tif2js.py --input data/Kampala.tif --output band1.js --band 1 --variable band1
+python tif2js.py -i data/Kampala.tif -o kampala.js -v kampala -b 1 4
 
 @author jonnyhuck
 '''
@@ -48,7 +48,7 @@ try:
 
 		# write JSON object
 		file.write ("const " + args.variable + " = { \n")
-		file.write ("bands: " + str(ds.count) + ", \n")
+		file.write ("bands: " + str(bands) + ", \n")
 		file.write ("tl: [" + str(ds.bounds.left)  + ", " + str(ds.bounds.top) 	 + "], \n")
 		file.write ("bl: [" + str(ds.bounds.left)  + ", " + str(ds.bounds.bottom) + "], \n")
 		file.write ("tr: [" + str(ds.bounds.right) + ", " + str(ds.bounds.top)	 + "], \n")
