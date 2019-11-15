@@ -54,11 +54,11 @@
 					for(let y = 0; y < kampala.height; y++){
 
 						//calculate ndvi for each pixel
-						ndvilayer[x][y] = ndvi(kampala.band1[x][y], kampala.band4[x][y]);
+						ndvilayer[x][y] = ndvi(kampala.band3[x][y], kampala.band4[x][y]);
 					}
 				}
 
-				// print a random vaue to show it worked
+				// print a random value to show it worked
 				console.log(kampala.width, ndvilayer.length);
 				console.log(kampala.height, ndvilayer[0].length);
 				console.log(ndvilayer[100][100]);
@@ -92,7 +92,7 @@
 				console.log("---");
 
 				//test bands
-				console.log(layer.band1.length, kampala.band1[0].length);
+				console.log(layer.band3.length, kampala.band3[0].length);
 				console.log(layer.band4.length, kampala.band4[0].length);
 				console.log("---");
 			}
