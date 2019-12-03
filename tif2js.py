@@ -73,10 +73,10 @@ try:
 		file.write ("geo2proj: function(lngLat) { return this.transformer.forward(lngLat); }, \n")
 
 		# convert coordinates from image space to geographical space
-		file.write ("image2geo: function(px) { return proj2geo(image2proj(px)); }, \n")
+		file.write ("image2geo: function(px) { return this.proj2geo(this.image2proj(px)); }, \n")
 
 		# convert coordinates from geographical space to image space
-		file.write ("geo2image: function(lngLat) { return proj2image(geo2proj(lngLat)); }, \n")
+		file.write ("geo2image: function(lngLat) { return this.proj2image(this.geo2proj(lngLat)); }, \n")
 
 		# return bounds in lng lat format
 		file.write ("getGeoBounds: function() { return [ this.proj2geo(this.bl), this.proj2geo(this.tr) ]; }, \n")
@@ -88,10 +88,10 @@ try:
 		file.write ("geo2proj2: function(latlng) { return this.transformer.forward(latlng.reverse()); }, \n")
 
 		# convert coordinates from geographical space to image space
-		file.write ("geo2image2: function(latlng) { return proj2image(geo2proj(latlng.reverse())); }, \n")
+		file.write ("geo2image2: function(latlng) { return this.proj2image(this.geo2proj(latlng.reverse())); }, \n")
 
 		# convert coordinates from image space to geographical space (reversed to latlng)
-		file.write ("image2geo2: function(px) { return proj2geo(image2proj(px).reverse()); }, \n")
+		file.write ("image2geo2: function(px) { return this.proj2geo(this.image2proj(px).reverse()); }, \n")
 
 		# return bounds in lng lat format (reversed to latlng)
 		file.write ("getGeoBounds2: function() { return [ this.proj2geo(this.bl).reverse(), this.proj2geo(this.tr).reverse() ]; }, \n")

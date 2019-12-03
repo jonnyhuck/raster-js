@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>Raster JS Demo</title>
+
+		<!-- Leaflet -->
+ 		<link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" />
+		<script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"></script>
+
+		<!-- Turf.js -->
+		<script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
+
+		<!-- Chart.js -->
+		<script src="https://www.chartjs.org/dist/2.9.3/Chart.min.js"></script>
+
+		<!-- Proj4js - required BEFORE dataset import -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.5.0/proj4.js"></script>
+
+		<!-- rasterjs dataset - mjusrt be AFTER Proj4js import -->
+		<script src="./kampala.js"></script>
+
+		<style>
+			/* style the map container*/
+			#map {
+				width: 600px;
+				height: 500px;
+				float: left;
+			}
+			/* style the chart container */
+			#canvas-holder {
+				width: 600px;
+				min-height: 500px;
+				float: right;
+			}
+			/* style the container */
+			#container {
+				width: 1200px;
+			}
+		</style>
+	</head>
+	<body onload="initMap();">
+
+		<!-- container to control the layout -->
+		<div id="container">
+
+			<!-- the map -->
+			<div id='map'></div>
+
+			<!-- the pie chart -->
+			<div id="canvas-holder">
+				<canvas id="chart"></canvas>
+			</div>
+	</div>
+
+		<script>
+
+      // global variable for map
+      let map, ndviLayer, circleLyr, pieChart, chartConfig;
+
+      /**
+       * Initialise the map
+       */
+      function initMap() {
+
+        // initialise the map
+        map = L.map('map').setView([0.34838461776183344, 32.56884098052979], 15);
+
+        // add some satellite imagery tiles
+				L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+					attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+				}).addTo(map);
+
+				// pre-calculate the entire ndvi layer to save computation in click listener
+				calculatendviLayer();
+
+				// initialise chart data (needs a global reference)
+				chartConfig = {
+			    type: 'pie',
+			    data: {
+						datasets:[{
+			        data: [],	// initialise with empty array as no data yet
+							backgroundColor: ["#999999", "#27b827"],
+				    }],
+						labels: ['Not Green', 'Green'],
+					},
+				};
+
+				// initialise the chart
+				let ctx = document.getElementById('chart').getContext('2d');
+				pieChart = new Chart(ctx, chartConfig);
+
+				// set a click listener to report NDVI witihn 500m of a click
+				map.on('click', function(e) {
+
+					// calculate the green ratio
+					let greenRatio = parseFloat((calculateGreenRatio([e.latlng.lng, e.latlng.lat])* 100).toFixed(2));
+
+					// update the chart to reflect the ratio
+					chartConfig.data.datasets[0].data = [100-greenRatio, greenRatio];
+					pieChart.update();
+
+					//output ratio to console
+					console.log(greenRatio + "% Green Space");
+				});
+			}
+
+
+			/**
+			 * Calculate the green ratio within 500m of a location
+			 */
+			function calculateGreenRatio(lngLat){
+
+				// get a polygon representing a 500m radius around the clicked location
+				const circle = turf.circle(turf.point(lngLat), 0.5,
+					{
+						units: 'kilometers',
+						steps: 64,
+					});
+
+				// remove previous circle layer and add a new one
+				if (circleLyr) map.removeLayer(circleLyr);
+				circleLyr = L.geoJson(circle,
+					{
+						style: {
+							color: 'yellow',
+							weight: 0.5,
+							opacity: 0.6,
+							fillColor: '#ff7800',
+							fillOpacity: 0.3,
+						}
+					}).addTo(map);
+
+				// get bounds of the circle and extract the corners in image space
+				const bl = kampala.geo2image([circleLyr.getBounds().getWest(), circleLyr.getBounds().getSouth()]);
+				const tr = kampala.geo2image([circleLyr.getBounds().getEast(), circleLyr.getBounds().getNorth()]);
+
+				//loop through all cells in dataset within the bounds
+				let points = [];
+				for (let x = bl[0]; x <= tr[0]; x++) {
+					for (let y = tr[1]; y <= bl[1]; y++){
+
+						// add point with property for ndvi value
+						points.push(turf.point(kampala.image2geo([x, y]),{ ndvi: ndviLayer[x][y] }));
+					}
+				}
+
+				// get the coordinates from the array that are in the aoi
+				const pointsWithin = turf.pointsWithinPolygon(turf.featureCollection(points), circle);
+
+				// count the number of green cells (NDVI above 0.5 threshold)
+				let green = 0;
+				for (let p = 0; p < pointsWithin.features.length; p++) {
+					if (pointsWithin.features[p].properties.ndvi >= 0.5) {
+						green++;
+					}
+				}
+
+				//calculate green ratio and return
+				return green / pointsWithin.features.length;
+			}
+
+
+			/**
+			 * Calculate NDVI for entire dataset
+			 */
+			function calculatendviLayer(){
+
+				// initialise global array for ndvi results
+				ndviLayer = [];
+
+				// loop through every single column
+				for(let x = 0; x < kampala.width; x++){
+
+					// add a new column
+					ndviLayer.push([]);
+
+					// loop through every single pixel in the column
+					for(let y = 0; y < kampala.height; y++){
+
+						// calculate ndvi for each pixel
+						ndviLayer[x][y] = ndvi(kampala.band3[x][y], kampala.band4[x][y]);
+					}
+				}
+			}
+
+
+			/**
+			 * Normalised Difference Vegetation Index calculation
+			 */
+			function ndvi(red, nir){
+				return (nir - red) / (nir + red);
+			}
+		</script>
+	</body>
+</html>
