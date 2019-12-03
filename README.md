@@ -13,7 +13,7 @@ python tif2js.py --input data/Kampala.tif --output band1.js --band 1 --variable 
 
 #### Arguments
 
-* `-h` `--help`: Print help message to the console 
+* `-h` `--help`: Print help message to the console
 * `-i` `--input`: specify the path to the input raster file (acceptable file types are dictated by support offered in the [rasterio](https://rasterio.readthedocs.io/en/stable/) and [GDAL](https://gdal.org/) libraries)
 * `-o` `--output`: specify the path for the output raster file (must be `*.js`)
 * `-b` `--bands` (optional) specify the band to be extracted into the JavaScript file *(default all bands)*
@@ -53,11 +53,11 @@ optional arguments:
 * `.tr`: The coordinates of the top right corner of the raster (in the original CRS of the dataset) (e.g.  `[462100.0, 45000.0]`)
 * `.br`: The coordinates of the bottom right corner of the raster (in the original CRS of the dataset) (e.g. `[462100.0, 27890.0]`)
 * `.bounds`: The bounds of the raster (in the original CRS of the dataset) (e.g. `[[444440.0, 27890.0] ,[462100.0, 45000.0]]`)
-* `.resolution`: The resolution of the raster in the original units of the dataset (e.g. `10`) 
-* `.width`: The width of the raster in pixels (e.g. `1766`) 
-* `.height`: The height of the raster in pixels (e.g. `1711`) 
-* `.proj`: The proj4 string representing the original CRS of the dataset (e.g. `"+proj=utm +zone=36 +datum=WGS84 +units=m +no_defs "`) 
-* `.transformer`: A [proj4js]() object providing transformations between the original CRS of the dataset and WGS84 geographical coordinates (e.g. `proj4("+proj=longlat +datum=WGS84 +no_defs", "+proj=utm +zone=36 +datum=WGS84 +units=m +no_defs")`) 
+* `.resolution`: The resolution of the raster in the original units of the dataset (e.g. `10`)
+* `.width`: The width of the raster in pixels (e.g. `1766`)
+* `.height`: The height of the raster in pixels (e.g. `1711`)
+* `.proj`: The proj4 string representing the original CRS of the dataset (e.g. `"+proj=utm +zone=36 +datum=WGS84 +units=m +no_defs "`)
+* `.transformer`: A [proj4js]() object providing transformations between the original CRS of the dataset and WGS84 geographical coordinates (e.g. `proj4("+proj=longlat +datum=WGS84 +no_defs", "+proj=utm +zone=36 +datum=WGS84 +units=m +no_defs")`)
 
 #### Data
 
@@ -72,7 +72,7 @@ The data are stored in two dimensional arrays named `.band1`, `.band2`, `.band3`
 * `.proj2geo(coords[])`: transform coordinates between the original CRS of the dataset and WGS84 geographical coordinates
 * `.geo2proj(lngLat[])`: transform coordinates between WGS84 geographical coordinates and the original CRS of the dataset
 * `.image2geo(pixels[])`: transform coordinates between image space and WGS84 geographical coordinates
-* `.geo2image(latLng[])`: transform coordinates between WGS84 geographical coordinates and image space
+* `.geo2image(lngLat[])`: transform coordinates between WGS84 geographical coordinates and image space
 * `.getGeoBounds()`: return the bounds of the dataset in WGS84 geographical coordinates
 
 #### Convenience Functions
@@ -112,4 +112,3 @@ tif2js.py --input data/Kampala.tif --output band1.js --bands 1 --variable kampal
 
 * Error handling for output file path
 * Error handling for EPSG-defined CRS being used when offline
-
