@@ -63,7 +63,7 @@
       function initMap() {
 
         // initialise the map
-        map = L.map('map').setView([0.34838461776183344, 32.56884098052979], 15);
+        map = L.map('map').setView([0.348384, 32.568841], 15);
 
         // add some satellite imagery tiles
 				L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
@@ -71,7 +71,7 @@
 				}).addTo(map);
 
 				// pre-calculate the entire ndvi layer to save computation in click listener
-				calculatendviLayer();
+				calculateNdviLayer();
 
 				// initialise chart data
 				let chartConfig = {
@@ -161,7 +161,7 @@
 			/**
 			 * Calculate NDVI for entire dataset
 			 */
-			function calculatendviLayer(){
+			function calculateNdviLayer(){
 
 				// initialise global array for ndvi results
 				ndviLayer = [];
