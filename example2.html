@@ -30,7 +30,6 @@
 			/* style the chart container */
 			#canvas-holder {
 				width: 600px;
-				min-height: 500px;
 				float: right;
 			}
 			/* style the container */
@@ -56,7 +55,7 @@
 		<script>
 
       // global variable for map
-      let map, ndviLayer, circleLyr, pieChart, chartConfig;
+      let map, ndviLayer, circleLyr;
 
       /**
        * Initialise the map
@@ -74,8 +73,8 @@
 				// pre-calculate the entire ndvi layer to save computation in click listener
 				calculatendviLayer();
 
-				// initialise chart data (needs a global reference)
-				chartConfig = {
+				// initialise chart data
+				let chartConfig = {
 			    type: 'pie',
 			    data: {
 						datasets:[{
@@ -87,17 +86,17 @@
 				};
 
 				// initialise the chart
-				let ctx = document.getElementById('chart').getContext('2d');
-				pieChart = new Chart(ctx, chartConfig);
+				const ctx = document.getElementById('chart').getContext('2d');
+				let pieChart = new Chart(ctx, chartConfig);
 
 				// set a click listener to report NDVI witihn 500m of a click
 				map.on('click', function(e) {
 
 					// calculate the green ratio
-					let greenRatio = parseFloat((calculateGreenRatio([e.latlng.lng, e.latlng.lat])* 100).toFixed(2));
+					const greenRatio = parseFloat((calculateGreenRatio([e.latlng.lng, e.latlng.lat])* 100).toFixed(2));
 
 					// update the chart to reflect the ratio
-					chartConfig.data.datasets[0].data = [100-greenRatio, greenRatio];
+					chartConfig.data.datasets[0].data = [100 - greenRatio, greenRatio];
 					pieChart.update();
 
 					//output ratio to console
@@ -112,24 +111,22 @@
 			function calculateGreenRatio(lngLat){
 
 				// get a polygon representing a 500m radius around the clicked location
-				const circle = turf.circle(turf.point(lngLat), 0.5,
-					{
-						units: 'kilometers',
-						steps: 64,
-					});
+				const circle = turf.circle(turf.point(lngLat), 0.5, {
+					units: 'kilometers',
+					steps: 64,
+				});
 
 				// remove previous circle layer and add a new one
 				if (circleLyr) map.removeLayer(circleLyr);
-				circleLyr = L.geoJson(circle,
-					{
-						style: {
-							color: 'yellow',
-							weight: 0.5,
-							opacity: 0.6,
-							fillColor: '#ff7800',
-							fillOpacity: 0.3,
-						}
-					}).addTo(map);
+				circleLyr = L.geoJson(circle, {
+					style: {
+						color: 'yellow',
+						weight: 0.5,
+						opacity: 0.6,
+						fillColor: '#ff7800',
+						fillOpacity: 0.3,
+					}
+				}).addTo(map);
 
 				// get bounds of the circle and extract the corners in image space
 				const bl = kampala.geo2image([circleLyr.getBounds().getWest(), circleLyr.getBounds().getSouth()]);
@@ -156,7 +153,7 @@
 					}
 				}
 
-				//calculate green ratio and return
+				// calculate green ratio and return
 				return green / pointsWithin.features.length;
 			}
 
