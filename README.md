@@ -47,7 +47,7 @@ optional arguments:
 
 #### Properties
 
-* `bands`: The number of bands contained in the dataset
+* `bands`: An array listing the bands contained in the dataset
 * `.tl`: The coordinates of the top left corner of the raster (in the original CRS of the dataset)  (e.g. `[444440.0, 45000.0]`)
 * `.bl`: The coordinates of the bottom left corner of the raster (in the original CRS of the dataset)  (e.g.  `[444440.0, 27890.0]`)
 * `.tr`: The coordinates of the top right corner of the raster (in the original CRS of the dataset) (e.g.  `[462100.0, 45000.0]`)
